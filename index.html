@@ -16,6 +16,11 @@
   --text: #f0f0ff;
   --muted: #6b6b8a;
 }
+/* Thèmes alternatifs */
+body[data-theme="ocean"] { --accent:#00b4ff; --accent2:#0066ff; --accent3:#00ffd0; }
+body[data-theme="sunset"] { --accent:#ff6b35; --accent2:#f7b733; --accent3:#ff3cac; }
+body[data-theme="forest"] { --accent:#3ddc97; --accent2:#1b998b; --accent3:#c6ff00; }
+body[data-theme="mono"] { --accent:#e0e0e0; --accent2:#9e9e9e; --accent3:#ffffff; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   background: var(--bg);
@@ -23,6 +28,7 @@ body {
   font-family: 'Space Mono', monospace;
   min-height: 100vh;
   padding: 30px 16px 60px;
+  transition: background 0.4s;
 }
 body::before {
   content: '';
@@ -47,7 +53,9 @@ body::before {
   letter-spacing: -2px;
   margin-bottom: 6px;
 }
-.tagline { text-align: center; color: var(--muted); font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
+.tagline { text-align: center; color: var(--muted); font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 18px; }
+.counter { text-align:center; font-size:0.7rem; color:var(--muted); margin-bottom:24px; }
+.counter b { color: var(--accent3); }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; margin-bottom: 16px; }
 .label { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent3); margin-bottom: 12px; }
 input[type=password], input[type=text], textarea, select {
@@ -63,13 +71,12 @@ textarea { resize: vertical; min-height: 90px; }
 .key-wrap { position: relative; }
 .key-wrap input { padding-right: 40px; }
 .eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
-.row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
-.row.between { justify-content: space-between; }
 .field { margin-top: 14px; }
-.field:first-child { margin-top: 0; }
 .field .label { margin-bottom: 8px; }
+.two { display: flex; gap: 12px; }
+.two > div { flex: 1; }
 .check { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 0.78rem; }
-.check input { width: auto; accent-color: var(--accent2); width: 18px; height: 18px; cursor: pointer; }
+.check input { accent-color: var(--accent2); width: 18px; height: 18px; cursor: pointer; flex-shrink:0; }
 .suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .chip {
   background: var(--bg); border: 1px solid var(--border); color: var(--muted);
@@ -105,6 +112,8 @@ textarea { resize: vertical; min-height: 90px; }
   font-family: 'Space Mono', monospace; transition: all 0.2s; width: 100%; margin-top: 8px;
 }
 .btn-sec:hover { border-color: var(--accent); color: var(--text); }
+.btnrow { display:flex; gap:8px; }
+.btnrow .btn-sec { margin-top: 10px; }
 .status {
   display: none; align-items: center; gap: 12px;
   padding: 14px; background: rgba(0,240,255,0.06);
@@ -121,7 +130,7 @@ textarea { resize: vertical; min-height: 90px; }
 .dl { display: block; margin-top: 10px; padding: 12px; background: var(--bg); border: 1px solid var(--accent3); border-radius: 10px; color: var(--accent3); text-align: center; font-size: 0.8rem; text-decoration: none; }
 .history { margin-top: 4px; }
 .histitem { display: flex; gap: 12px; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; }
-.histitem video { width: 80px; height: 50px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #000; }
+.histitem video { width: 80px; height: 50px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #000; cursor:pointer; }
 .histitem .htxt { flex: 1; font-size: 0.7rem; color: var(--text); overflow: hidden; }
 .histitem .htxt .hdate { color: var(--muted); font-size: 0.6rem; margin-top: 2px; }
 .histitem a { color: var(--accent3); font-size: 0.85rem; text-decoration: none; flex-shrink: 0; }
@@ -131,6 +140,9 @@ textarea { resize: vertical; min-height: 90px; }
 .collapse-h.open .arrow { transform: rotate(180deg); }
 .collapse-body { display: none; margin-top: 14px; }
 .collapse-body.on { display: block; }
+.themes { display:flex; gap:8px; flex-wrap:wrap; }
+.theme-dot { width:34px; height:34px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:border-color 0.2s; }
+.theme-dot.active { border-color: var(--text); }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -138,6 +150,18 @@ textarea { resize: vertical; min-height: 90px; }
 <div class="wrap">
   <div class="logo">VideoIA</div>
   <div class="tagline">Génère des vidéos avec l'IA</div>
+  <div class="counter">🎞️ Vidéos générées : <b id="count">0</b></div>
+
+  <div class="card">
+    <div class="label">🎨 Thème de couleurs</div>
+    <div class="themes">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#ff3cac,#7b2ff7)" onclick="setTheme('')" title="Néon"></div>
+      <div class="theme-dot" style="background:linear-gradient(135deg,#00b4ff,#0066ff)" onclick="setTheme('ocean')" title="Océan"></div>
+      <div class="theme-dot" style="background:linear-gradient(135deg,#ff6b35,#f7b733)" onclick="setTheme('sunset')" title="Coucher de soleil"></div>
+      <div class="theme-dot" style="background:linear-gradient(135deg,#3ddc97,#1b998b)" onclick="setTheme('forest')" title="Forêt"></div>
+      <div class="theme-dot" style="background:linear-gradient(135deg,#e0e0e0,#9e9e9e)" onclick="setTheme('mono')" title="Mono"></div>
+    </div>
+  </div>
 
   <div class="card">
     <div class="label">🔑 Clé API Replicate</div>
@@ -154,11 +178,31 @@ textarea { resize: vertical; min-height: 90px; }
 
   <div class="card">
     <div class="label">🤖 Modèle IA</div>
-    <select id="model">
-      <option value="minimax/video-01">Minimax Video-01 (texte → vidéo)</option>
-      <option value="minimax/video-01-live">Minimax Video-01-Live (animation à partir d'une image)</option>
+    <select id="model" onchange="onModelChange()">
+      <option value="minimax/hailuo-2.3">Hailuo 2.3 (jusqu'à 10s, durée + résolution réglables)</option>
+      <option value="minimax/hailuo-2.3-fast">Hailuo 2.3 Fast (plus rapide, moins cher)</option>
+      <option value="minimax/video-01">Video-01 (~6s, simple)</option>
+      <option value="minimax/video-01-live">Video-01-Live (anime une image)</option>
     </select>
-    <div class="hint" id="modelhint">Génère une vidéo de ~6s à partir de ta description.</div>
+    <div class="hint" id="modelhint">Le plus complet : choisis la durée et la qualité ci-dessous.</div>
+
+    <div class="two" id="durres" style="margin-top:14px;">
+      <div>
+        <div class="label">⏱️ Durée</div>
+        <select id="duration" onchange="onDurChange()">
+          <option value="6">6 secondes</option>
+          <option value="10">10 secondes</option>
+        </select>
+      </div>
+      <div>
+        <div class="label">📐 Qualité</div>
+        <select id="resolution">
+          <option value="768P">768p (standard)</option>
+          <option value="1080P">1080p (HD)</option>
+        </select>
+      </div>
+    </div>
+    <div class="hint" id="durhint">Note : la 10s n'est disponible qu'en 768p (la 1080p est limitée à 6s).</div>
   </div>
 
   <div class="card">
@@ -173,6 +217,10 @@ textarea { resize: vertical; min-height: 90px; }
       <button class="chip" onclick="addPrompt('heure dorée, lumière chaude')">🌅 golden hour</button>
       <button class="chip" onclick="addPrompt('ambiance néon cyberpunk')">🌃 cyberpunk</button>
       <button class="chip" onclick="addPrompt('style aquarelle animée')">🎨 aquarelle</button>
+      <button class="chip" onclick="addPrompt('noir et blanc, grain de film')">⚫ noir & blanc</button>
+      <button class="chip" onclick="addPrompt('couleurs vives, style anime')">🌈 anime</button>
+      <button class="chip" onclick="addPrompt('caméra qui tourne autour du sujet')">🔄 rotation</button>
+      <button class="chip" onclick="addPrompt('brouillard matinal, atmosphère douce')">🌫️ brume</button>
     </div>
 
     <div class="field" style="margin-top:18px;">
@@ -185,6 +233,7 @@ textarea { resize: vertical; min-height: 90px; }
         <img id="imgview">
         <button onclick="clearImg()">✕ Retirer l'image</button>
       </div>
+      <div class="hint">⚠️ Astuce : les images lourdes peuvent faire échouer la génération (limite des proxys gratuits).</div>
     </div>
 
     <label class="check" style="margin-top:16px;">
@@ -193,13 +242,21 @@ textarea { resize: vertical; min-height: 90px; }
     </label>
 
     <button class="btn" onclick="go()" style="margin-top:16px;">✨ Générer la vidéo</button>
-    <button class="btn-sec" onclick="surprise()">🎲 Surprends-moi (prompt aléatoire)</button>
+    <div class="btnrow">
+      <button class="btn-sec" onclick="surprise()">🎲 Surprends-moi</button>
+      <button class="btn-sec" onclick="repeatLast()">🔁 Refaire le dernier</button>
+    </div>
 
     <div class="status" id="st"><div class="spin"></div><span id="stxt">Démarrage...</span></div>
     <div class="err" id="err"></div>
     <div class="result" id="res">
       <video id="vid" controls autoplay loop playsinline></video>
       <a id="dl" class="dl" download="video-ia.mp4">⬇ Télécharger la vidéo</a>
+      <div class="btnrow">
+        <button class="btn-sec" onclick="copyLink()">🔗 Copier le lien</button>
+        <button class="btn-sec" onclick="shareVid()">📤 Partager</button>
+        <button class="btn-sec" onclick="fullscreenVid()">⛶ Plein écran</button>
+      </div>
     </div>
   </div>
 
@@ -216,7 +273,6 @@ textarea { resize: vertical; min-height: 90px; }
 </div>
 
 <script>
-/* ---------- Suggestions de prompts aléatoires ---------- */
 const RANDOM_PROMPTS = [
   "Un renard roux qui marche dans une forêt enneigée au lever du soleil, plan cinématique",
   "Une ville futuriste sous la pluie avec des néons qui se reflètent dans les flaques",
@@ -227,206 +283,201 @@ const RANDOM_PROMPTS = [
   "Un dragon majestueux qui survole des montagnes brumeuses au crépuscule",
   "Une rue de Tokyo la nuit, ambiance néon cyberpunk, passants avec parapluies",
 ];
+let lastPrompt = '';
+let currentVideoUrl = '';
 
-/* ---------- Clé API mémorisée ---------- */
+/* ---------- Thème ---------- */
+function setTheme(t) {
+  document.body.dataset.theme = t;
+  localStorage.setItem('videoia_theme', t);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+  event && event.target && event.target.classList.add('active');
+}
+
+/* ---------- Init ---------- */
 window.addEventListener('load', () => {
-  const saved = localStorage.getItem('videoia_key');
-  if (saved) {
-    document.getElementById('key').value = saved;
-    document.getElementById('savekey').checked = true;
-  }
+  const savedKey = localStorage.getItem('videoia_key');
+  if (savedKey) { document.getElementById('key').value = savedKey; document.getElementById('savekey').checked = true; }
+  const savedTheme = localStorage.getItem('videoia_theme');
+  if (savedTheme !== null) document.body.dataset.theme = savedTheme;
+  document.getElementById('count').textContent = localStorage.getItem('videoia_count') || '0';
+  lastPrompt = localStorage.getItem('videoia_lastprompt') || '';
   renderHist();
   updateCount();
+  onModelChange();
 });
 
 function onSaveKey() {
-  const save = document.getElementById('savekey').checked;
-  if (save) localStorage.setItem('videoia_key', document.getElementById('key').value.trim());
+  if (document.getElementById('savekey').checked)
+    localStorage.setItem('videoia_key', document.getElementById('key').value.trim());
   else localStorage.removeItem('videoia_key');
 }
-document.getElementById('key') && document.getElementById('key').addEventListener('input', () => {
+document.getElementById('key').addEventListener('input', () => {
   if (document.getElementById('savekey').checked)
     localStorage.setItem('videoia_key', document.getElementById('key').value.trim());
 });
 
-/* ---------- Indice selon le modèle ---------- */
-document.getElementById('model').addEventListener('change', function() {
+/* ---------- Modèle / durée / résolution ---------- */
+function onModelChange() {
+  const m = document.getElementById('model').value;
   const hint = document.getElementById('modelhint');
-  if (this.value.includes('live'))
-    hint.textContent = "Anime une image fixe : importe une image de départ ci-dessous.";
-  else
-    hint.textContent = "Génère une vidéo de ~6s à partir de ta description.";
-});
-
-/* ---------- Petites fonctions UI ---------- */
-function toggleEye() {
-  const k = document.getElementById('key');
-  k.type = k.type === 'password' ? 'text' : 'password';
+  const durres = document.getElementById('durres');
+  const durhint = document.getElementById('durhint');
+  const supportsDurRes = m.includes('hailuo');
+  durres.style.display = supportsDurRes ? 'flex' : 'none';
+  durhint.style.display = supportsDurRes ? 'block' : 'none';
+  if (m.includes('live')) hint.textContent = "Anime une image fixe : importe une image de départ ci-dessous.";
+  else if (m === 'minimax/video-01') hint.textContent = "Génère une vidéo de ~6s à partir de ta description.";
+  else hint.textContent = "Le plus complet : choisis la durée et la qualité ci-dessous.";
 }
-function updateCount() {
-  document.getElementById('cc').textContent = document.getElementById('prompt').value.length;
-}
-function addPrompt(text) {
-  const p = document.getElementById('prompt');
-  p.value = p.value.trim() ? p.value.trim() + ', ' + text : text;
-  updateCount();
-}
-function surprise() {
-  const p = RANDOM_PROMPTS[Math.floor(Math.random() * RANDOM_PROMPTS.length)];
-  document.getElementById('prompt').value = p;
-  updateCount();
+function onDurChange() {
+  // 10s impossible en 1080p -> on force 768p
+  const dur = document.getElementById('duration').value;
+  const resSel = document.getElementById('resolution');
+  if (dur === '10') {
+    resSel.value = '768P';
+    resSel.querySelector('option[value="1080P"]').disabled = true;
+  } else {
+    resSel.querySelector('option[value="1080P"]').disabled = false;
+  }
 }
 
-/* ---------- Image de départ ---------- */
+/* ---------- UI ---------- */
+function toggleEye() { const k=document.getElementById('key'); k.type = k.type==='password'?'text':'password'; }
+function updateCount() { document.getElementById('cc').textContent = document.getElementById('prompt').value.length; }
+function addPrompt(t) { const p=document.getElementById('prompt'); p.value = p.value.trim()? p.value.trim()+', '+t : t; updateCount(); }
+function surprise() { document.getElementById('prompt').value = RANDOM_PROMPTS[Math.floor(Math.random()*RANDOM_PROMPTS.length)]; updateCount(); }
+function repeatLast() {
+  if (!lastPrompt) { showErr("Aucun prompt précédent enregistré."); return; }
+  document.getElementById('prompt').value = lastPrompt; updateCount();
+}
+
+/* ---------- Image ---------- */
 let imgBase64 = null;
 function onImg(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 20 * 1024 * 1024) { showErr("Image trop lourde (max 20 Mo)."); input.value=''; return; }
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 20*1024*1024) { showErr("Image trop lourde (max 20 Mo)."); input.value=''; return; }
   const reader = new FileReader();
-  reader.onload = e => {
-    imgBase64 = e.target.result;
-    document.getElementById('imgview').src = imgBase64;
-    document.getElementById('imgprev').classList.add('on');
-  };
+  reader.onload = e => { imgBase64 = e.target.result; document.getElementById('imgview').src = imgBase64; document.getElementById('imgprev').classList.add('on'); };
   reader.readAsDataURL(file);
 }
-function clearImg() {
-  imgBase64 = null;
-  document.getElementById('imgfile').value = '';
-  document.getElementById('imgprev').classList.remove('on');
+function clearImg() { imgBase64=null; document.getElementById('imgfile').value=''; document.getElementById('imgprev').classList.remove('on'); }
+
+/* ---------- Actions vidéo ---------- */
+function copyLink() {
+  if (!currentVideoUrl) return;
+  navigator.clipboard.writeText(currentVideoUrl).then(()=>alert("Lien copié !")).catch(()=>alert("Lien : "+currentVideoUrl));
+}
+function shareVid() {
+  if (!currentVideoUrl) return;
+  if (navigator.share) navigator.share({ title:'Ma vidéo IA', url: currentVideoUrl }).catch(()=>{});
+  else { navigator.clipboard.writeText(currentVideoUrl); alert("Partage non supporté ici — lien copié à la place !"); }
+}
+function fullscreenVid() {
+  const v = document.getElementById('vid');
+  if (v.requestFullscreen) v.requestFullscreen();
+  else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
 }
 
-/* ---------- Historique (localStorage) ---------- */
-function getHist() { try { return JSON.parse(localStorage.getItem('videoia_hist') || '[]'); } catch { return []; } }
-function saveHist(arr) { localStorage.setItem('videoia_hist', JSON.stringify(arr.slice(0, 12))); }
-function addToHist(url, prompt) {
-  const arr = getHist();
-  arr.unshift({ url, prompt, date: new Date().toLocaleString('fr-FR') });
-  saveHist(arr);
-  renderHist();
+/* ---------- Compteur ---------- */
+function bumpCount() {
+  let c = parseInt(localStorage.getItem('videoia_count')||'0',10)+1;
+  localStorage.setItem('videoia_count', c);
+  document.getElementById('count').textContent = c;
 }
+
+/* ---------- Historique ---------- */
+function getHist() { try { return JSON.parse(localStorage.getItem('videoia_hist')||'[]'); } catch { return []; } }
+function saveHist(a) { localStorage.setItem('videoia_hist', JSON.stringify(a.slice(0,12))); }
+function addToHist(url, prompt) { const a=getHist(); a.unshift({url,prompt,date:new Date().toLocaleString('fr-FR')}); saveHist(a); renderHist(); }
 function renderHist() {
-  const list = document.getElementById('histlist');
-  const arr = getHist();
-  if (!arr.length) { list.innerHTML = '<div class="histempty">Aucune vidéo générée pour l\'instant.</div>'; return; }
-  list.innerHTML = arr.map(h => `
+  const list=document.getElementById('histlist'); const a=getHist();
+  if(!a.length){ list.innerHTML='<div class="histempty">Aucune vidéo générée pour l\'instant.</div>'; return; }
+  list.innerHTML = a.map(h=>`
     <div class="histitem">
-      <video src="${h.url}" muted></video>
-      <div class="htxt">${h.prompt ? h.prompt.substring(0,60) : 'Vidéo'}${h.prompt && h.prompt.length>60?'…':''}<div class="hdate">${h.date}</div></div>
+      <video src="${h.url}" muted onclick="this.paused?this.play():this.pause()"></video>
+      <div class="htxt">${h.prompt? h.prompt.substring(0,60):'Vidéo'}${h.prompt&&h.prompt.length>60?'…':''}<div class="hdate">${h.date}</div></div>
       <a href="${h.url}" target="_blank" title="Ouvrir">↗</a>
     </div>`).join('');
 }
-function clearHist() {
-  if (confirm("Vider tout l'historique ?")) { localStorage.removeItem('videoia_hist'); renderHist(); }
-}
-function toggleHist() {
-  document.getElementById('histhead').classList.toggle('open');
-  document.getElementById('histbody').classList.toggle('on');
-}
+function clearHist() { if(confirm("Vider tout l'historique ?")){ localStorage.removeItem('videoia_hist'); renderHist(); } }
+function toggleHist() { document.getElementById('histhead').classList.toggle('open'); document.getElementById('histbody').classList.toggle('on'); }
 
 /* ---------- Helpers ---------- */
-function showErr(msg) {
-  const e = document.getElementById('err');
-  e.textContent = '❌ ' + msg;
-  e.classList.add('on');
-}
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function showErr(m){ const e=document.getElementById('err'); e.textContent='❌ '+m; e.classList.add('on'); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
 /* ---------- Génération ---------- */
 async function go() {
-  const key = document.getElementById('key').value.trim();
-  const prompt = document.getElementById('prompt').value.trim();
-  const model = document.getElementById('model').value;
-  const optimizer = document.getElementById('optimizer').checked;
-  const st = document.getElementById('st');
-  const stxt = document.getElementById('stxt');
-  const err = document.getElementById('err');
-  const res = document.getElementById('res');
-  const btn = document.querySelector('.btn');
+  const key=document.getElementById('key').value.trim();
+  const prompt=document.getElementById('prompt').value.trim();
+  const model=document.getElementById('model').value;
+  const optimizer=document.getElementById('optimizer').checked;
+  const st=document.getElementById('st'), stxt=document.getElementById('stxt');
+  const err=document.getElementById('err'), res=document.getElementById('res');
+  const btn=document.querySelector('.btn');
 
-  err.classList.remove('on');
-  res.classList.remove('on');
+  err.classList.remove('on'); res.classList.remove('on');
+  if(!key){ showErr('Entre ta clé API Replicate !'); return; }
+  if(!prompt && !imgBase64){ showErr('Décris ta vidéo ou importe une image !'); return; }
+  if(model.includes('live') && !imgBase64){ showErr('Le modèle Live a besoin d\'une image de départ.'); return; }
 
-  if (!key) { showErr('Entre ta clé API Replicate !'); return; }
-  if (!prompt && !imgBase64) { showErr('Décris ta vidéo ou importe une image !'); return; }
-  if (model.includes('live') && !imgBase64) { showErr('Le modèle Live a besoin d\'une image de départ.'); return; }
+  lastPrompt = prompt; localStorage.setItem('videoia_lastprompt', prompt);
 
-  btn.disabled = true;
-  st.classList.add('on');
-  stxt.textContent = 'Connexion à Replicate...';
+  btn.disabled=true; st.classList.add('on'); stxt.textContent='Connexion à Replicate...';
 
-  // Construit l'input selon les options
+  // Construit l'input selon le modèle
   const input = { prompt_optimizer: optimizer };
-  if (prompt) input.prompt = prompt;
-  if (imgBase64) input.first_frame_image = imgBase64;
+  if(prompt) input.prompt = prompt;
+  if(imgBase64) input.first_frame_image = imgBase64;
+  if(model.includes('hailuo')) {
+    input.duration = parseInt(document.getElementById('duration').value,10);
+    input.resolution = document.getElementById('resolution').value;
+  }
 
   const proxies = [
     url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
     url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     url => `https://proxy.cors.sh/${url}`,
+    url => `https://thingproxy.freeboard.io/fetch/${url}`,
+    url => `https://cors-anywhere.herokuapp.com/${url}`,
   ];
 
-  let prediction = null;
-
-  for (let i = 0; i < proxies.length; i++) {
-    try {
-      stxt.textContent = `Tentative ${i+1}/3...`;
-      const proxyUrl = proxies[i]('https://api.replicate.com/v1/models/' + model + '/predictions');
-      const r = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input })
+  let prediction=null;
+  for(let i=0;i<proxies.length;i++){
+    try{
+      stxt.textContent=`Tentative ${i+1}/${proxies.length}...`;
+      const r=await fetch(proxies[i]('https://api.replicate.com/v1/models/'+model+'/predictions'),{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},
+        body:JSON.stringify({input})
       });
-      if (!r.ok) {
-        const t = await r.text();
-        throw new Error('HTTP ' + r.status + ': ' + t.substring(0, 100));
-      }
-      prediction = await r.json();
-      prediction._proxyIndex = i;
-      break;
-    } catch(e) {
-      if (i === proxies.length - 1) {
-        showErr('Impossible de contacter Replicate. Vérifie ta connexion internet. Détail: ' + e.message);
-        st.classList.remove('on');
-        btn.disabled = false;
-        return;
-      }
+      if(!r.ok){ const t=await r.text(); throw new Error('HTTP '+r.status+': '+t.substring(0,100)); }
+      prediction=await r.json(); prediction._pi=i; break;
+    }catch(e){
+      if(i===proxies.length-1){ showErr('Impossible de contacter Replicate. Tous les relais gratuits ont échoué. Réessaie plus tard. Détail: '+e.message); st.classList.remove('on'); btn.disabled=false; return; }
     }
   }
 
-  stxt.textContent = 'Génération en cours... ⏳ (1-3 min)';
-  const pi = prediction._proxyIndex;
-
-  for (let attempt = 0; attempt < 60; attempt++) {
+  stxt.textContent='Génération en cours... ⏳ (1-3 min)';
+  const pi=prediction._pi;
+  for(let a=0;a<60;a++){
     await sleep(5000);
-    try {
-      const pollUrl = proxies[pi]('https://api.replicate.com/v1/predictions/' + prediction.id);
-      const r = await fetch(pollUrl, { headers: { 'Authorization': 'Bearer ' + key } });
-      const data = await r.json();
-      if (data.status === 'succeeded') {
-        const videoUrl = Array.isArray(data.output) ? data.output[0] : data.output;
-        document.getElementById('vid').src = videoUrl;
-        document.getElementById('dl').href = videoUrl;
-        res.classList.add('on');
-        st.classList.remove('on');
-        btn.disabled = false;
-        addToHist(videoUrl, prompt);
-        return;
+    try{
+      const r=await fetch(proxies[pi]('https://api.replicate.com/v1/predictions/'+prediction.id),{headers:{'Authorization':'Bearer '+key}});
+      const data=await r.json();
+      if(data.status==='succeeded'){
+        const url=Array.isArray(data.output)?data.output[0]:data.output;
+        currentVideoUrl=url;
+        document.getElementById('vid').src=url; document.getElementById('dl').href=url;
+        res.classList.add('on'); st.classList.remove('on'); btn.disabled=false;
+        addToHist(url, prompt); bumpCount(); return;
       }
-      if (data.status === 'failed') {
-        showErr('Génération échouée: ' + (data.error || 'erreur inconnue'));
-        st.classList.remove('on');
-        btn.disabled = false;
-        return;
-      }
-      stxt.textContent = `En cours... (${attempt * 5}s écoulées) ✨`;
-    } catch(e) { /* continue polling */ }
+      if(data.status==='failed'){ showErr('Génération échouée: '+(data.error||'erreur inconnue')); st.classList.remove('on'); btn.disabled=false; return; }
+      stxt.textContent=`En cours... (${a*5}s écoulées) ✨`;
+    }catch(e){}
   }
-
-  showErr('Timeout - la génération a pris trop longtemps.');
-  st.classList.remove('on');
-  btn.disabled = false;
+  showErr('Timeout - la génération a pris trop longtemps.'); st.classList.remove('on'); btn.disabled=false;
 }
 </script>
 </body>
