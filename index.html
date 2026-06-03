@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VideoIA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --border: #2a2a3a;
+  --accent: #ff3cac;
+  --accent2: #7b2ff7;
+  --accent3: #00f0ff;
+  --text: #f0f0ff;
+  --muted: #6b6b8a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+  padding: 30px 16px 60px;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(123,47,247,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(255,60,172,0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.wrap { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 3rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  letter-spacing: -2px;
+  margin-bottom: 6px;
+}
+.tagline { text-align: center; color: var(--muted); font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; margin-bottom: 16px; }
+.label { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent3); margin-bottom: 12px; }
+input[type=password], input[type=text], textarea, select {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; color: var(--text);
+  font-family: 'Space Mono', monospace; font-size: 0.82rem;
+  outline: none; transition: border-color 0.3s;
+}
+select { cursor: pointer; }
+input:focus, textarea:focus, select:focus { border-color: var(--accent2); }
+textarea { resize: vertical; min-height: 90px; }
+.hint { font-size: 0.65rem; color: var(--muted); margin-top: 6px; }
+.key-wrap { position: relative; }
+.key-wrap input { padding-right: 40px; }
+.eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; }
+.row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+.row.between { justify-content: space-between; }
+.field { margin-top: 14px; }
+.field:first-child { margin-top: 0; }
+.field .label { margin-bottom: 8px; }
+.check { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 0.78rem; }
+.check input { width: auto; accent-color: var(--accent2); width: 18px; height: 18px; cursor: pointer; }
+.suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip {
+  background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+  border-radius: 20px; padding: 6px 12px; font-size: 0.68rem; cursor: pointer;
+  font-family: 'Space Mono', monospace; transition: all 0.2s;
+}
+.chip:hover { border-color: var(--accent2); color: var(--text); }
+.charcount { font-size: 0.62rem; color: var(--muted); text-align: right; margin-top: 4px; }
+.imgprev { margin-top: 10px; display: none; }
+.imgprev.on { display: block; }
+.imgprev img { width: 100%; border-radius: 10px; border: 1px solid var(--border); max-height: 200px; object-fit: cover; }
+.imgprev button { margin-top: 8px; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 6px 12px; font-size: 0.68rem; cursor: pointer; font-family: 'Space Mono', monospace; }
+.filelabel {
+  display: block; background: var(--bg); border: 1px dashed var(--border);
+  border-radius: 10px; padding: 14px; text-align: center; color: var(--muted);
+  font-size: 0.75rem; cursor: pointer; transition: border-color 0.3s;
+}
+.filelabel:hover { border-color: var(--accent2); }
+.filelabel input { display: none; }
+.btn {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 12px; color: white;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  margin-top: 4px;
+}
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,60,172,0.3); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-sec {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 10px; padding: 10px; font-size: 0.72rem; cursor: pointer;
+  font-family: 'Space Mono', monospace; transition: all 0.2s; width: 100%; margin-top: 8px;
+}
+.btn-sec:hover { border-color: var(--accent); color: var(--text); }
+.status {
+  display: none; align-items: center; gap: 12px;
+  padding: 14px; background: rgba(0,240,255,0.06);
+  border: 1px solid rgba(0,240,255,0.2); border-radius: 10px;
+  margin-top: 14px; font-size: 0.78rem; color: var(--accent3);
+}
+.status.on { display: flex; }
+.spin { width: 18px; height: 18px; border: 2px solid rgba(0,240,255,0.2); border-top-color: var(--accent3); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+.err { display: none; margin-top: 12px; padding: 12px 14px; background: rgba(255,60,172,0.08); border: 1px solid rgba(255,60,172,0.3); border-radius: 10px; font-size: 0.78rem; color: #ff7eb3; }
+.err.on { display: block; }
+.result { display: none; margin-top: 14px; }
+.result.on { display: block; }
+.result video { width: 100%; border-radius: 12px; border: 1px solid var(--border); }
+.dl { display: block; margin-top: 10px; padding: 12px; background: var(--bg); border: 1px solid var(--accent3); border-radius: 10px; color: var(--accent3); text-align: center; font-size: 0.8rem; text-decoration: none; }
+.history { margin-top: 4px; }
+.histitem { display: flex; gap: 12px; align-items: center; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+.histitem video { width: 80px; height: 50px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #000; }
+.histitem .htxt { flex: 1; font-size: 0.7rem; color: var(--text); overflow: hidden; }
+.histitem .htxt .hdate { color: var(--muted); font-size: 0.6rem; margin-top: 2px; }
+.histitem a { color: var(--accent3); font-size: 0.85rem; text-decoration: none; flex-shrink: 0; }
+.histempty { color: var(--muted); font-size: 0.72rem; text-align: center; padding: 10px; }
+.collapse-h { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.collapse-h .arrow { transition: transform 0.3s; color: var(--muted); }
+.collapse-h.open .arrow { transform: rotate(180deg); }
+.collapse-body { display: none; margin-top: 14px; }
+.collapse-body.on { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">VideoIA</div>
+  <div class="tagline">Génère des vidéos avec l'IA</div>
+
+  <div class="card">
+    <div class="label">🔑 Clé API Replicate</div>
+    <div class="key-wrap">
+      <input type="password" id="key" placeholder="r8_xxxxxxxxxxxxxxxxxxxxxxxx">
+      <button class="eye" onclick="toggleEye()">👁</button>
+    </div>
+    <label class="check" style="margin-top:10px;">
+      <input type="checkbox" id="savekey" onchange="onSaveKey()">
+      <span>Mémoriser ma clé dans ce navigateur</span>
+    </label>
+    <div class="hint">Utilisée uniquement dans ton navigateur.</div>
+  </div>
+
+  <div class="card">
+    <div class="label">🤖 Modèle IA</div>
+    <select id="model">
+      <option value="minimax/video-01">Minimax Video-01 (texte → vidéo)</option>
+      <option value="minimax/video-01-live">Minimax Video-01-Live (animation à partir d'une image)</option>
+    </select>
+    <div class="hint" id="modelhint">Génère une vidéo de ~6s à partir de ta description.</div>
+  </div>
+
+  <div class="card">
+    <div class="label">🎬 Décris ta vidéo</div>
+    <textarea id="prompt" maxlength="2000" placeholder="Ex: Un border collie qui court dans les montagnes avec une cascade..." oninput="updateCount()"></textarea>
+    <div class="charcount"><span id="cc">0</span>/2000</div>
+
+    <div class="suggest">
+      <button class="chip" onclick="addPrompt('cinématique, ralenti dramatique')">🎥 cinématique</button>
+      <button class="chip" onclick="addPrompt('plan rapproché, détails nets')">🔍 gros plan</button>
+      <button class="chip" onclick="addPrompt('vue aérienne par drone')">🚁 drone</button>
+      <button class="chip" onclick="addPrompt('heure dorée, lumière chaude')">🌅 golden hour</button>
+      <button class="chip" onclick="addPrompt('ambiance néon cyberpunk')">🌃 cyberpunk</button>
+      <button class="chip" onclick="addPrompt('style aquarelle animée')">🎨 aquarelle</button>
+    </div>
+
+    <div class="field" style="margin-top:18px;">
+      <div class="label">🖼️ Image de départ (optionnel)</div>
+      <label class="filelabel">
+        Clique pour importer une image (JPG/PNG, max 20 Mo)
+        <input type="file" id="imgfile" accept="image/png,image/jpeg" onchange="onImg(this)">
+      </label>
+      <div class="imgprev" id="imgprev">
+        <img id="imgview">
+        <button onclick="clearImg()">✕ Retirer l'image</button>
+      </div>
+    </div>
+
+    <label class="check" style="margin-top:16px;">
+      <input type="checkbox" id="optimizer" checked>
+      <span>✨ Optimiseur de prompt (améliore automatiquement la description)</span>
+    </label>
+
+    <button class="btn" onclick="go()" style="margin-top:16px;">✨ Générer la vidéo</button>
+    <button class="btn-sec" onclick="surprise()">🎲 Surprends-moi (prompt aléatoire)</button>
+
+    <div class="status" id="st"><div class="spin"></div><span id="stxt">Démarrage...</span></div>
+    <div class="err" id="err"></div>
+    <div class="result" id="res">
+      <video id="vid" controls autoplay loop playsinline></video>
+      <a id="dl" class="dl" download="video-ia.mp4">⬇ Télécharger la vidéo</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="collapse-h" id="histhead" onclick="toggleHist()">
+      <div class="label" style="margin-bottom:0;">🕓 Historique</div>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="collapse-body" id="histbody">
+      <div class="history" id="histlist"></div>
+      <button class="btn-sec" onclick="clearHist()">🗑️ Vider l'historique</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Suggestions de prompts aléatoires ---------- */
+const RANDOM_PROMPTS = [
+  "Un renard roux qui marche dans une forêt enneigée au lever du soleil, plan cinématique",
+  "Une ville futuriste sous la pluie avec des néons qui se reflètent dans les flaques",
+  "Une montgolfière colorée qui survole des champs de lavande, vue aérienne par drone",
+  "Un chat astronaute flottant dans une station spatiale, hublot avec vue sur la Terre",
+  "Des vagues qui s'écrasent sur des falaises au coucher du soleil, ralenti dramatique",
+  "Un café cosy un matin de pluie, vapeur qui monte d'une tasse, lumière douce",
+  "Un dragon majestueux qui survole des montagnes brumeuses au crépuscule",
+  "Une rue de Tokyo la nuit, ambiance néon cyberpunk, passants avec parapluies",
+];
+
+/* ---------- Clé API mémorisée ---------- */
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('videoia_key');
+  if (saved) {
+    document.getElementById('key').value = saved;
+    document.getElementById('savekey').checked = true;
+  }
+  renderHist();
+  updateCount();
+});
+
+function onSaveKey() {
+  const save = document.getElementById('savekey').checked;
+  if (save) localStorage.setItem('videoia_key', document.getElementById('key').value.trim());
+  else localStorage.removeItem('videoia_key');
+}
+document.getElementById('key') && document.getElementById('key').addEventListener('input', () => {
+  if (document.getElementById('savekey').checked)
+    localStorage.setItem('videoia_key', document.getElementById('key').value.trim());
+});
+
+/* ---------- Indice selon le modèle ---------- */
+document.getElementById('model').addEventListener('change', function() {
+  const hint = document.getElementById('modelhint');
+  if (this.value.includes('live'))
+    hint.textContent = "Anime une image fixe : importe une image de départ ci-dessous.";
+  else
+    hint.textContent = "Génère une vidéo de ~6s à partir de ta description.";
+});
+
+/* ---------- Petites fonctions UI ---------- */
+function toggleEye() {
+  const k = document.getElementById('key');
+  k.type = k.type === 'password' ? 'text' : 'password';
+}
+function updateCount() {
+  document.getElementById('cc').textContent = document.getElementById('prompt').value.length;
+}
+function addPrompt(text) {
+  const p = document.getElementById('prompt');
+  p.value = p.value.trim() ? p.value.trim() + ', ' + text : text;
+  updateCount();
+}
+function surprise() {
+  const p = RANDOM_PROMPTS[Math.floor(Math.random() * RANDOM_PROMPTS.length)];
+  document.getElementById('prompt').value = p;
+  updateCount();
+}
+
+/* ---------- Image de départ ---------- */
+let imgBase64 = null;
+function onImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 20 * 1024 * 1024) { showErr("Image trop lourde (max 20 Mo)."); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    imgBase64 = e.target.result;
+    document.getElementById('imgview').src = imgBase64;
+    document.getElementById('imgprev').classList.add('on');
+  };
+  reader.readAsDataURL(file);
+}
+function clearImg() {
+  imgBase64 = null;
+  document.getElementById('imgfile').value = '';
+  document.getElementById('imgprev').classList.remove('on');
+}
+
+/* ---------- Historique (localStorage) ---------- */
+function getHist() { try { return JSON.parse(localStorage.getItem('videoia_hist') || '[]'); } catch { return []; } }
+function saveHist(arr) { localStorage.setItem('videoia_hist', JSON.stringify(arr.slice(0, 12))); }
+function addToHist(url, prompt) {
+  const arr = getHist();
+  arr.unshift({ url, prompt, date: new Date().toLocaleString('fr-FR') });
+  saveHist(arr);
+  renderHist();
+}
+function renderHist() {
+  const list = document.getElementById('histlist');
+  const arr = getHist();
+  if (!arr.length) { list.innerHTML = '<div class="histempty">Aucune vidéo générée pour l\'instant.</div>'; return; }
+  list.innerHTML = arr.map(h => `
+    <div class="histitem">
+      <video src="${h.url}" muted></video>
+      <div class="htxt">${h.prompt ? h.prompt.substring(0,60) : 'Vidéo'}${h.prompt && h.prompt.length>60?'…':''}<div class="hdate">${h.date}</div></div>
+      <a href="${h.url}" target="_blank" title="Ouvrir">↗</a>
+    </div>`).join('');
+}
+function clearHist() {
+  if (confirm("Vider tout l'historique ?")) { localStorage.removeItem('videoia_hist'); renderHist(); }
+}
+function toggleHist() {
+  document.getElementById('histhead').classList.toggle('open');
+  document.getElementById('histbody').classList.toggle('on');
+}
+
+/* ---------- Helpers ---------- */
+function showErr(msg) {
+  const e = document.getElementById('err');
+  e.textContent = '❌ ' + msg;
+  e.classList.add('on');
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ---------- Génération ---------- */
+async function go() {
+  const key = document.getElementById('key').value.trim();
+  const prompt = document.getElementById('prompt').value.trim();
+  const model = document.getElementById('model').value;
+  const optimizer = document.getElementById('optimizer').checked;
+  const st = document.getElementById('st');
+  const stxt = document.getElementById('stxt');
+  const err = document.getElementById('err');
+  const res = document.getElementById('res');
+  const btn = document.querySelector('.btn');
+
+  err.classList.remove('on');
+  res.classList.remove('on');
+
+  if (!key) { showErr('Entre ta clé API Replicate !'); return; }
+  if (!prompt && !imgBase64) { showErr('Décris ta vidéo ou importe une image !'); return; }
+  if (model.includes('live') && !imgBase64) { showErr('Le modèle Live a besoin d\'une image de départ.'); return; }
+
+  btn.disabled = true;
+  st.classList.add('on');
+  stxt.textContent = 'Connexion à Replicate...';
+
+  // Construit l'input selon les options
+  const input = { prompt_optimizer: optimizer };
+  if (prompt) input.prompt = prompt;
+  if (imgBase64) input.first_frame_image = imgBase64;
+
+  const proxies = [
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://proxy.cors.sh/${url}`,
+  ];
+
+  let prediction = null;
+
+  for (let i = 0; i < proxies.length; i++) {
+    try {
+      stxt.textContent = `Tentative ${i+1}/3...`;
+      const proxyUrl = proxies[i]('https://api.replicate.com/v1/models/' + model + '/predictions');
+      const r = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input })
+      });
+      if (!r.ok) {
+        const t = await r.text();
+        throw new Error('HTTP ' + r.status + ': ' + t.substring(0, 100));
+      }
+      prediction = await r.json();
+      prediction._proxyIndex = i;
+      break;
+    } catch(e) {
+      if (i === proxies.length - 1) {
+        showErr('Impossible de contacter Replicate. Vérifie ta connexion internet. Détail: ' + e.message);
+        st.classList.remove('on');
+        btn.disabled = false;
+        return;
+      }
+    }
+  }
+
+  stxt.textContent = 'Génération en cours... ⏳ (1-3 min)';
+  const pi = prediction._proxyIndex;
+
+  for (let attempt = 0; attempt < 60; attempt++) {
+    await sleep(5000);
+    try {
+      const pollUrl = proxies[pi]('https://api.replicate.com/v1/predictions/' + prediction.id);
+      const r = await fetch(pollUrl, { headers: { 'Authorization': 'Bearer ' + key } });
+      const data = await r.json();
+      if (data.status === 'succeeded') {
+        const videoUrl = Array.isArray(data.output) ? data.output[0] : data.output;
+        document.getElementById('vid').src = videoUrl;
+        document.getElementById('dl').href = videoUrl;
+        res.classList.add('on');
+        st.classList.remove('on');
+        btn.disabled = false;
+        addToHist(videoUrl, prompt);
+        return;
+      }
+      if (data.status === 'failed') {
+        showErr('Génération échouée: ' + (data.error || 'erreur inconnue'));
+        st.classList.remove('on');
+        btn.disabled = false;
+        return;
+      }
+      stxt.textContent = `En cours... (${attempt * 5}s écoulées) ✨`;
+    } catch(e) { /* continue polling */ }
+  }
+
+  showErr('Timeout - la génération a pris trop longtemps.');
+  st.classList.remove('on');
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
